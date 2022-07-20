@@ -24,7 +24,7 @@ jobs:
           username: ${{ steps.ecr-credentials.outputs.username }}
           password: ${{ steps.ecr-credentials.outputs.password }}
           # private registry
-          registry: 213020545630.dkr.ecr.us-west-2.amazonaws.com/oxen-server
+          registry: 213020545630.dkr.ecr.us-west-2.amazonaws.com
           image_name: oxen-server
       - uses: actions-rs/toolchain@v1
         with:
