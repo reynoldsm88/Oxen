@@ -3,8 +3,8 @@ on: [push, pull_request]
 name: 🐂 Continuous integration
 
 jobs:
-  check:
-    name: Check
+  clippy_fmt_check_test:
+    name: Rustfmt & Clippy & Check & Unit Test
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -13,57 +13,26 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      - uses: satackey/action-docker-layer-caching@v0.0.11
-        # Ignore the failure of a step and avoid terminating the job.
-        continue-on-error: true
-      - uses: actions-rs/cargo@v1
+      - run: rustup component add rustfmt clippy
+      - uses: whoan/docker-build-with-cache-action@v5
         with:
-          command: check
-
-  fmt:
-    name: Rustfmt
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-      - run: rustup component add rustfmt
-      - uses: satackey/action-docker-layer-caching@v0.0.11
-        # Ignore the failure of a step and avoid terminating the job.
-        continue-on-error: true
+          username: "${{ secrets.AWS_ACCESS_KEY_ID }}"
+          password: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+          # private registry
+          registry: 213020545630.dkr.ecr.us-west-2.amazonaws.com/oxen-server
+          image_name: oxen-server
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
           args: --all -- --check
-
-  clippy:
-    name: Clippy
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions-rs/cargo@v1
         with:
-          profile: minimal
-          toolchain: stable
-          override: true
-      - run: rustup component add clippy
+          command: check
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
           args: -- -D warnings
-
-  test:
-    name: Test Suite
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v2
       - uses: icepuma/rust-action@master
-      - uses: satackey/action-docker-layer-caching@v0.0.11
-        # Ignore the failure of a step and avoid terminating the job.
-        continue-on-error: true
       - run: |
           cargo build
           mkdir /tmp/oxen_sync/
