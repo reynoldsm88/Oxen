@@ -46,14 +46,9 @@ pub fn scan_df_csv<P: AsRef<Path>>(path: P, delimiter: u8) -> Result<LazyFrame, 
 }
 
 pub fn read_df_json<P: AsRef<Path>>(path: P) -> Result<DataFrame, OxenError> {
-    let path = path.as_ref();
-    let error_str = format!("Could not read tabular data from path {:?}", path);
-    let file = File::open(path)?;
-    let df = JsonReader::new(file)
-        .infer_schema_len(Some(DEFAULT_INFER_SCHEMA_LEN))
-        .finish()
-        .expect(&error_str);
-    Ok(df)
+    Ok(scan_df_json(&path)?
+        .collect()
+        .unwrap_or_else(|_| panic!("{}: {:?}", READ_ERROR, path.as_ref())))
 }
 
 pub fn scan_df_json<P: AsRef<Path>>(path: P) -> Result<LazyFrame, OxenError> {
